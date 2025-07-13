@@ -1,0 +1,325 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Save Coco - Quiz with Lock & Code</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: 'Arial Black', Arial, sans-serif;
+      background-color: #0b0c2a;
+      color: white;
+      overflow: hidden;
+      user-select: none;
+    }
+    .page {
+      position: absolute;
+      width: 100vw; height: 100vh;
+      display: none;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      text-align: center;
+      padding: 40px;
+      transition: opacity 0.5s ease;
+    }
+    .page.active {
+      display: flex;
+    }
+    .lock-icon {
+      position: fixed;
+      top: 20px; left: 20px;
+      width: 60px; height: 60px;
+      background: url('https://cdn-icons-png.flaticon.com/512/565/565547.png') no-repeat center center;
+      background-size: contain;
+      filter: drop-shadow(0 0 8px #00e0ff);
+      z-index: 1000;
+    }
+    .code-display {
+      position: fixed;
+      top: 100px; left: 20px;
+      font-size: 1.8em;
+      font-weight: bold;
+      color: #00e0ff;
+      text-shadow: 0 0 10px #00e0ff;
+      min-width: 150px;
+      height: 40px;
+      line-height: 40px;
+      border: 2px solid #00e0ff;
+      border-radius: 14px;
+      padding: 0 18px;
+      background: rgba(7, 20, 39, 0.85);
+      box-shadow: 0 0 25px #00e0ff;
+      z-index: 1000;
+      letter-spacing: 0.25em;
+    }
+    h2 {
+      font-size: 3.5em;
+      color: #00e0ff;
+      text-shadow: 0 0 20px #00e0ff;
+      margin-bottom: 20px;
+    }
+    p {
+      font-size: 1.6em;
+      margin-bottom: 50px;
+      max-width: 800px;
+      text-shadow: 0 0 15px #00e0ff;
+    }
+    .quiz-buttons {
+      display: flex;
+      flex-direction: column;
+      gap: 25px;
+      width: 100%;
+      max-width: 600px;
+      align-items: center;
+    }
+    .quiz-buttons button {
+      position: relative;
+      padding: 18px 30px;
+      font-size: 1.3em;
+      border: 2px solid #00e0ff;
+      border-radius: 25px;
+      background: linear-gradient(145deg, #071427, #131c3c);
+      color: #ffffff;
+      box-shadow: 0 0 25px rgba(0, 224, 255, 0.35);
+      cursor: pointer;
+      transition: background-color 0.3s ease, color 0.3s ease;
+      width: 100%;
+    }
+    .quiz-buttons button:hover {
+      background: #00e0ff;
+      color: #000;
+      box-shadow: 0 0 40px #00e0ff, 0 0 70px #00e0ff;
+    }
+    .quiz-buttons button.wrong {
+      background-color: #ff3b3b !important;
+      border-color: #ff3b3b !important;
+      color: white !important;
+      box-shadow: 0 0 15px #ff3b3b !important;
+    }
+    .message-wrong, .message-correct {
+      position: absolute;
+      bottom: -30px;
+      left: 50%;
+      transform: translateX(-50%);
+      font-weight: bold;
+      font-size: 0.95em;
+      pointer-events: none;
+      user-select: none;
+      opacity: 0;
+      transition: opacity 0.3s ease;
+      white-space: nowrap;
+    }
+    .message-wrong { color: #ff4d4d; }
+    .message-correct { color: #00ff99; }
+    .visible { opacity: 1; }
+    #finalCode {
+      font-size: 2.2em;
+      color: #00e0ff;
+      text-shadow: 0 0 20px #00e0ff;
+      letter-spacing: 0.3em;
+      font-weight: bold;
+      user-select: all;
+    }
+    .btn {
+      margin-top: 40px;
+      padding: 18px 36px;
+      font-size: 1.4em;
+      border-radius: 25px;
+      border: 2px solid #00e0ff;
+      background: linear-gradient(145deg, #071427, #131c3c);
+      color: #fff;
+      cursor: pointer;
+      box-shadow: 0 0 25px rgba(0, 224, 255, 0.35);
+      transition: all 0.3s ease;
+    }
+    .btn:hover {
+      background: #00e0ff;
+      color: #000;
+      box-shadow: 0 0 40px #00e0ff, 0 0 70px #00e0ff;
+    }
+  </style>
+</head>
+<body>
+  <div class="lock-icon" title="Locked Cage"></div>
+  <div class="code-display" id="codeDisplay">Code: </div>
+
+  <div id="quizContainer"></div>
+
+  <div class="page" id="done">
+    <h2>✅ Quiz Complete!</h2>
+    <p>Well done! You’ve learned how to stay safe online. Coco would be proud!</p>
+    <p style="margin-top: 30px; font-size: 1.4em;">
+      The dog's cage unlock code is: <span id="finalCode"></span>
+    </p>
+  </div>
+
+  <audio id="correctSound" src="tick.mp3" preload="auto"></audio>
+  <audio id="wrongSound" src="wrong.mp3" preload="auto"></audio>
+
+  <script>
+    const quizData = [
+      {
+        question: "🧠 Question 1: Who's Really Behind the Screen?",
+        text: "What is a warning sign that someone online may not be who they say they are?",
+        answers: [
+          { text: "They love the same games as you", correct: false },
+          { text: "They avoid video calls and give weird answers", correct: true, digit: "4" },
+          { text: "They ask about your favorite color", correct: false }
+        ]
+      },
+      {
+        question: "🤫 Question 2: Private Information",
+        text: "Which of the following should you NEVER share online?",
+        answers: [
+          { text: "Your favorite TV show", correct: false },
+          { text: "Your pet’s name", correct: false },
+          { text: "Your identification number", correct: true, digit: "1" }
+        ]
+      },
+      {
+        question: "🚩 Question 3: Spotting Red Flags",
+        text: "What should you do if someone threatens you with your private photos?",
+        answers: [
+          { text: "Apologize and do what they ask", correct: false },
+          { text: "Block them and talk to a trusted adult", correct: true, digit: "7" },
+          { text: "Send them more photos", correct: false }
+        ]
+      },
+      {
+        question: "🕵️‍♀️ Question 4: Fake Links",
+        text: "What is a common sign of a suspicious or fake link?",
+        answers: [
+          { text: 'The link ends with ".gov.sg" ', correct: false },
+          { text: 'A message saying “click fast or else!"', correct: true, digit: "2" },
+          { text: "It’s a link sent by your school", correct: false }
+        ]
+      },
+      {
+        question: "🎭 Question 5: Online Manipulation",
+        text: "Someone says, “You’re mean if you don’t trust me.” What should you do?",
+        answers: [
+          { text: "Recognize it as manipulation and talk to an adult", correct: true, digit: "6" },
+          { text: "Keep talking to them to calm them down", correct: false },
+          { text: "Try to make them feel better", correct: false }
+        ]
+      },
+      {
+        question: "🔐 Question 6: Protecting Your Password",
+        text: "Who is it safe to share your passwords with?",
+        answers: [
+          { text: "Your online gaming buddy", correct: false },
+          { text: "No one, keep passwords private", correct: true, digit: "9" },
+          { text: "A friend you’ve known online for a week", correct: false }
+        ]
+      },
+      {
+        question: "🧩 Question 7: Handling Uncomfortable Messages",
+        text: "What should you do if someone makes you feel uncomfortable online?",
+        answers: [
+          { text: "Just ignore it and hope it stops", correct: false },
+          { text: "Block them and tell a trusted adult", correct: true, digit: "3" },
+          { text: "Ask them to stop nicely", correct: false }
+        ]
+      },
+      {
+        question: "📵 Question 8: Red Flag Behavior",
+        text: "What’s a red flag that someone might be trying to groom you online?",
+        answers: [
+          { text: "They ask you to keep secrets and talk privately", correct: true, digit: "8" },
+          { text: "They ask what level you are in a game", correct: false },
+          { text: "They send memes", correct: false }
+        ]
+      }
+    ];
+
+    const codeDigits = [];
+
+    function loadQuiz() {
+      const container = document.getElementById('quizContainer');
+      quizData.forEach((q, idx) => {
+        const page = document.createElement('div');
+        page.className = 'page' + (idx === 0 ? ' active' : '');
+        page.id = `question${idx+1}`;
+        page.innerHTML = `
+          <h2>${q.question}</h2>
+          <p>${q.text}</p>
+          <div class="quiz-buttons">
+            ${q.answers.map((a, i) => `
+              <button onclick="checkAnswer(${a.correct}, 'question${idx+1}', '${idx+1 === quizData.length ? 'done' : 'question'+(idx+2)}', this${a.correct ? `, '${a.digit}'` : ''})">
+                ${String.fromCharCode(65+i)}. ${a.text}
+                <span class="message-wrong"></span>
+                <span class="message-correct"></span>
+              </button>
+            `).join('')}
+          </div>
+        `;
+        container.appendChild(page);
+      });
+    }
+
+    function checkAnswer(isCorrect, currentId, nextId, btn, codeDigit) {
+      const page = document.getElementById(currentId);
+      const buttons = page.querySelectorAll("button");
+      const codeDisplay = document.getElementById("codeDisplay");
+      const wrongMsg = btn.querySelector('.message-wrong');
+      const correctMsg = btn.querySelector('.message-correct');
+      const correctSound = document.getElementById("correctSound");
+      const wrongSound = document.getElementById("wrongSound");
+
+      const positiveMessages = ["Great job!", "I knew you could do it!", "You're so smart!", "Brilliant!"];
+      const encouragingMessages = ["Uh oh! Try again!", "Almost there!", "Don't give up!"];
+
+      if (!isCorrect) {
+        wrongSound.currentTime = 0;
+        wrongSound.play();
+        wrongMsg.textContent = encouragingMessages[Math.floor(Math.random() * encouragingMessages.length)];
+        btn.classList.add('wrong');
+        wrongMsg.classList.add('visible');
+        setTimeout(() => {
+          btn.classList.remove('wrong');
+          wrongMsg.classList.remove('visible');
+        }, 1500);
+        return;
+      }
+
+      correctSound.currentTime = 0;
+      correctSound.play();
+      if (codeDigit) {
+        codeDigits.push(codeDigit);
+        codeDisplay.textContent = "Code: " + codeDigits.join('');
+      }
+      correctMsg.textContent = positiveMessages[Math.floor(Math.random() * positiveMessages.length)];
+      correctMsg.classList.add('visible');
+      buttons.forEach(b => b.disabled = true);
+      setTimeout(() => {
+        correctMsg.classList.remove('visible');
+        page.style.opacity = 0;
+        setTimeout(() => {
+          page.classList.remove('active');
+          page.style.opacity = 1;
+          if (nextId === 'done') {
+            const donePage = document.getElementById('done');
+            donePage.classList.add('active');
+            document.getElementById('finalCode').textContent = codeDigits.join('');
+            if (!donePage.querySelector('.btn')) {
+              const unlockBtn = document.createElement("button");
+              unlockBtn.textContent = "🔓 Unlock Coco Now!";
+              unlockBtn.className = "btn";
+              unlockBtn.onclick = () => window.location.href = "4th-phase.html";
+              donePage.appendChild(unlockBtn);
+            }
+          } else {
+            const nextPage = document.getElementById(nextId);
+            nextPage.classList.add('active');
+            nextPage.querySelectorAll('button').forEach(b => b.disabled = false);
+          }
+        }, 500);
+      }, 100);
+    }
+
+    loadQuiz();
+  </script>
+</body>
+</html>

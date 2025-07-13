@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+ <meta charset="UTF-8" />
+ <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+ <title>Unlock Coco's Cage</title>
+ <style>
+   body {
+     background-color: #0b0c2a;
+     font-family: 'Arial Black', Arial, sans-serif;
+     margin: 0;
+     padding: 0;
+     height: 100vh;
+     display: flex;
+     justify-content: center;
+     align-items: center;
+     color: white;
+     position: relative;
+   }
+
+   .code-display-corner {
+     position: absolute;
+     top: 20px;
+     left: 20px;
+     font-size: 1.5em;
+     font-weight: bold;
+     color: #FFA500;
+     text-shadow: 0 0 10px #FFA500;
+     border: 2px solid #FFA500;
+     border-radius: 10px;
+     padding: 8px 16px;
+     background-color: rgba(7, 20, 39, 0.85);
+     letter-spacing: 0.2em;
+     user-select: none;
+   }
+
+   .timer {
+     position: absolute;
+     top: 20px;
+     right: 20px;
+     font-size: 2em;
+     font-weight: bold;
+     color: #FFA500;
+     background-color: rgba(0,0,0,0.4);
+     border: 2px solid #FFA500;
+     padding: 12px 20px;
+     border-radius: 15px;
+     text-shadow: 0 0 10px #FFA500;
+     display: flex;
+     align-items: center;
+     gap: 10px;
+   }
+
+   .container {
+     text-align: center;
+   }
+
+   h1 {
+     color: #FFA500;
+     text-shadow: 0 0 15px #FFA500;
+     margin-bottom: 15px;
+     line-height: 1.4;
+   }
+
+   .code-display {
+     font-size: 2em;
+     letter-spacing: 0.3em;
+     border: 2px solid #FFA500;
+     border-radius: 10px;
+     padding: 10px 20px;
+     width: 250px;
+     margin: 0 auto 20px;
+     background-color: rgba(0,0,0,0.6);
+     color: #FFA500;
+     text-shadow: 0 0 10px #FFA500;
+     user-select: none;
+   }
+
+   .keypad {
+     display: grid;
+     grid-template-columns: repeat(3, 80px);
+     gap: 15px;
+     justify-content: center;
+     margin: 0 auto;
+   }
+
+   .keypad button {
+     padding: 20px;
+     font-size: 1.5em;
+     font-weight: bold;
+     border: none;
+     border-radius: 10px;
+     background-color: #FFA500;
+     color: black;
+     cursor: pointer;
+     transition: background 0.3s ease;
+   }
+
+   .keypad button:hover {
+     background-color: #ff9100;
+   }
+
+   .error-message {
+     margin-top: 10px;
+     font-size: 1em;
+     color: #ff4d4d;
+     height: 20px;
+   }
+
+   audio {
+     display: none;
+   }
+ </style>
+</head>
+<body>
+
+ <!-- Code and Timer Display -->
+ <div class="code-display-corner">Code: 41726938</div>
+ <div class="timer" id="timer">30s left</div>
+
+ <div class="container">
+   <h1>
+     Unlock Coco's Cage.<br />
+     <b>You have 30 seconds.</b>
+   </h1>
+
+   <div class="code-display" id="codeDisplay">________</div>
+
+   <div class="keypad">
+     <button onclick="addDigit('1')">1</button>
+     <button onclick="addDigit('2')">2</button>
+     <button onclick="addDigit('3')">3</button>
+     <button onclick="addDigit('4')">4</button>
+     <button onclick="addDigit('5')">5</button>
+     <button onclick="addDigit('6')">6</button>
+     <button onclick="addDigit('7')">7</button>
+     <button onclick="addDigit('8')">8</button>
+     <button onclick="addDigit('9')">9</button>
+     <button onclick="clearCode()">Clear</button>
+     <button onclick="addDigit('0')">0</button>
+     <button onclick="checkCode()">Ok</button>
+   </div>
+
+   <div class="error-message" id="errorMessage"></div>
+
+   <!-- Background ticking sound -->
+   <audio id="tickSound" src="timer.mp3" preload="auto" loop></audio>
+ </div>
+
+ <script>
+   const correctCode = "41726938";
+   let enteredCode = "";
+   let timeLeft = 30;
+   let unlocked = false;
+
+   const timerDisplay = document.getElementById("timer");
+   const tickSound = document.getElementById("tickSound");
+
+   // Start ticking sound on first click (browsers allow it)
+   window.addEventListener('click', () => {
+     tickSound.play().catch(err => console.log("Autoplay blocked:", err));
+   }, { once: true });
+
+   const countdown = setInterval(() => {
+     timeLeft--;
+     timerDisplay.textContent = `${timeLeft}s left`;
+
+     if (timeLeft <= 0) {
+       clearInterval(countdown);
+       tickSound.pause();
+       if (!unlocked) {
+         window.location.href = "quiz.html"; // Go to quiz on timeout
+       }
+     }
+   }, 1000);
+
+   function addDigit(digit) {
+     if (enteredCode.length >= 8 || unlocked) return;
+     enteredCode += digit;
+     updateDisplay();
+   }
+
+   function clearCode() {
+     if (unlocked) return;
+     enteredCode = "";
+     updateDisplay();
+     document.getElementById("errorMessage").textContent = "";
+   }
+
+   function updateDisplay() {
+     const padded = (enteredCode + "________").slice(0, 8);
+     document.getElementById("codeDisplay").textContent = padded;
+   }
+
+   function checkCode() {
+     if (unlocked) return;
+     if (enteredCode === correctCode) {
+       unlocked = true;
+       clearInterval(countdown);
+       tickSound.pause(); // Stop sound before redirect
+       document.getElementById("errorMessage").textContent = "";
+
+       setTimeout(() => {
+         window.location.href = "finale.html";
+       }, 500);
+     } else {
+       document.getElementById("errorMessage").textContent = "Incorrect code. Try again!";
+     }
+   }
+ </script>
+
+</body>
+</html>
