@@ -1,0 +1,279 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Real Flipbook</title>
+  <style>
+    body {
+      margin: 0;
+      padding: 0;
+      height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      font-family: 'Roboto', sans-serif;
+      overflow-x: hidden;
+    }
+
+    #page3 {
+      background-image: url("3rd-pg.png");
+      background-size: cover;
+      background-position: center;
+      height: 100vh;
+      width: 100vw;
+      padding-top: 20px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      flex-direction: column;
+      position: relative;
+      z-index: 1;
+    }
+
+    .page3-title {
+      font-size: 40pt;
+      color: rgb(0, 0, 0);
+      text-shadow: 2px 2px 5px rgb(255, 255, 255);
+      margin-bottom: 70px;
+      margin-top: -100px;
+    }
+
+    .page3-subtitle {
+      font-size: 30pt;
+      color: rgb(0, 0, 0);
+      text-shadow: 2px 2px 5px rgb(255, 255, 255);
+      margin-bottom: 60px;
+      margin-top: -70px;
+    }
+
+    input {
+      display: none;
+    }
+
+    .book {
+      width: 1000px;
+      height: 500px;
+      position: relative;
+      perspective: 2000px;
+      margin-top: -30px;
+    }
+
+    .flip {
+      width: 100%;
+      height: 100%;
+      position: absolute;
+      top: 0;
+      left: 0;
+      transform-origin: left;
+      transform-style: preserve-3d;
+      transform: rotateY(0deg);
+      transition: 0.8s ease-in-out;
+    }
+
+    .page {
+      width: 50%;
+      height: 100%;
+      position: absolute;
+      top: 0;
+      overflow: hidden;
+      backface-visibility: hidden;
+    }
+
+    .left {
+      left: 0;
+      z-index: 2;
+    }
+
+    .right {
+      right: 0;
+      transform: rotateY(0deg);
+      transform-origin: left;
+      z-index: 1;
+    }
+
+    .right img {
+      transform: scaleX(-1);
+    }
+
+    img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    #p1 { z-index: 4; }
+    #p2 { z-index: 3; }
+    #p3 { z-index: 2; }
+    #p4 { z-index: 1; }
+
+    #c1:checked ~ .book #p1 {
+      transform: rotateY(-180deg);
+    }
+
+    #c2:checked ~ .book #p2 {
+      transform: rotateY(-180deg);
+    }
+
+    #c3:checked ~ .book #p3 {
+      transform: rotateY(-180deg);
+    }
+
+    .page3-buttons button {
+      padding: 10px 20px;
+      font-size: 18px;
+      background-color: #f58210;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      color: rgb(0, 0, 0);
+      transition: 0.3s ease;
+      margin-top: 10px;
+    }
+
+    .page3-buttons button:hover {
+      background-color: #15fb21;
+      color: black;
+    }
+
+    #quizButton {
+      margin-top: 20px;
+      padding: 10px 20px;
+      font-size: 20px;
+      background-color: #f58210;
+      border: none;
+      border-radius: 10px;
+      cursor: pointer;
+      color: rgb(0, 0, 0);
+      transition: 0.3s ease;
+    }
+
+    #quizButton:hover {
+      background-color: #15fb21;
+      color: black;
+    }
+
+    .fade-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      background-color: black;
+      opacity: 0;
+      pointer-events: none;
+      z-index: 9999;
+      transition: opacity 1s ease;
+    }
+
+    .fade-overlay.active {
+      opacity: 1;
+      pointer-events: auto;
+    }
+  </style>
+</head>
+<body>
+
+  <div id="page3" class="page">
+    <h2 class="page3-title">You have found Coco's diary!</h2>
+    <p class="page3-subtitle">Task 2: Flip through to learn the truth.</p>
+
+    <!-- Hidden Checkboxes -->
+    <input type="checkbox" id="c1">
+    <input type="checkbox" id="c2">
+    <input type="checkbox" id="c3">
+
+    <div class="book">
+      <div class="flip" id="p1">
+        <div class="page left">
+          <img src="book-pg-1.png" alt="Page 1" />
+        </div>
+        <div class="page right">
+          <img src="book-pg-2.jpg" alt="Page 2" />
+        </div>
+      </div>
+
+      <div class="flip" id="p2">
+        <div class="page left">
+          <img src="book-pg-3.png" alt="Page 3" />
+        </div>
+        <div class="page right">
+          <img src="book-pg-4.jpg" alt="Page 4" />
+        </div>
+      </div>
+
+      <div class="flip" id="p3">
+        <div class="page left">
+          <img src="book-pg-5.png" alt="Page 5" />
+        </div>
+        <div class="page right">
+          <img src="book-pg-6.jpg" alt="Page 6" />
+        </div>
+      </div>
+
+      <div class="flip" id="p4">
+        <div class="page left">
+          <img src="book-pg-7.png" alt="Page 7" />
+        </div>
+        <div class="page right"></div>
+      </div>
+    </div>
+
+    <div class="page3-buttons">
+      <button onclick="prevPage()">Previous</button>
+      <button onclick="nextPage()">Next</button>
+    </div>
+
+    <button id="quizButton">Ready to do quiz?</button>
+  </div>
+
+  <!-- Fade overlay -->
+  <div id="fadeOverlay" class="fade-overlay"></div>
+
+  <script>
+    let currentPage = 0;
+    const checkboxes = [
+      document.getElementById("c1"),
+      document.getElementById("c2"),
+      document.getElementById("c3")
+    ];
+
+    // Load flip sound
+    const flipSound = new Audio("pageflip.mp3");
+
+    function updateFlip() {
+      checkboxes.forEach((cb, i) => {
+        cb.checked = i < currentPage;
+      });
+    }
+
+    function nextPage() {
+      if (currentPage < checkboxes.length) {
+        currentPage++;
+        updateFlip();
+        flipSound.currentTime = 0;
+        flipSound.play();
+      }
+    }
+
+    function prevPage() {
+      if (currentPage > 0) {
+        currentPage--;
+        updateFlip();
+        flipSound.currentTime = 0;
+        flipSound.play();
+      }
+    }
+
+    document.getElementById("quizButton").addEventListener("click", () => {
+      const overlay = document.getElementById("fadeOverlay");
+      overlay.classList.add("active");
+
+      setTimeout(() => {
+        window.location.href = "final-quiz-file.html";
+      }, 1000);
+    });
+  </script>
+</body>
+</html>

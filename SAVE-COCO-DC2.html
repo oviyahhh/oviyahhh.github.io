@@ -5,11 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Save Coco</title>
   <style>
-    * {
-      margin: 0;
-      padding: 0;
-      box-sizing: border-box;
-    }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
 
     body {
       font-family: 'Arial Black', Arial, sans-serif;
@@ -46,7 +42,7 @@
 
     .center-container {
       color: #f33496;
-      text-shadow: 4px 4px 10px rgb(0, 0, 0);
+      text-shadow: 4px 4px 10px black;
       display: flex;
       flex-direction: column;
       align-items: center;
@@ -59,7 +55,7 @@
       margin-bottom: 30px;
     }
 
-    .start-button, .nav-button {
+    .start-button {
       padding: 20px 50px;
       font-size: 24px;
       font-weight: 700;
@@ -73,15 +69,14 @@
       margin-bottom: 30px;
     }
 
-    .start-button:hover,
-    .nav-button:hover {
+    .start-button:hover {
       background-color: #15fb21;
       box-shadow: 0 0 25px #45df1e;
     }
 
     .task-text {
       font-size: 26px;
-      color: rgb(255, 255, 255);
+      color: white;
       max-width: 80%;
       margin-top: 20px;
       line-height: 1.6;
@@ -89,8 +84,8 @@
     }
 
     .rug-hotspot {
-      width: 30px;
-      height: 30px;
+      width: 7px;
+      height: 7px;
       background-color: rgba(255, 0, 0, 0.6);
       border-radius: 50%;
       position: absolute;
@@ -101,7 +96,6 @@
       display: none;
     }
 
-    /* Black transition overlay */
     .fade-overlay {
       position: fixed;
       top: 0;
@@ -123,7 +117,15 @@
 </head>
 <body>
 
-  <!-- Fade to black overlay -->
+  <!-- Background music audio -->
+  <audio id="pg1Music" autoplay muted loop>
+    <source src="pg1.mp3" type="audio/mpeg" />
+  </audio>
+
+  <audio id="pg2Music" loop>
+    <source src="pg2.mp3" type="audio/mpeg" />
+  </audio>
+
   <div class="fade-overlay" id="fadeOverlay"></div>
 
   <!-- Page 1 -->
@@ -143,27 +145,30 @@
     <div class="rug-hotspot" id="rugHotspot"></div>
   </div>
 
-  <!-- Background Music -->
-  <audio id="bgMusic" loop>
-    <source src="your-music.mp3" type="audio/mpeg">
-  </audio>
-
   <script>
-    const music = document.getElementById("bgMusic");
+    const pg1Music = document.getElementById("pg1Music");
+    const pg2Music = document.getElementById("pg2Music");
 
-    // Attempt to play on load
+    // Fade in music volume
     window.addEventListener("load", () => {
-      const playPromise = music.play();
-      if (playPromise !== undefined) {
-        playPromise.catch(() => {
-          // Will try again on user interaction
-        });
-      }
+      pg1Music.volume = 0;
+      pg1Music.muted = false;
+
+      let vol = 0;
+      const fadeIn = setInterval(() => {
+        if (vol < 1) {
+          vol += 0.05;
+          pg1Music.volume = Math.min(vol, 1);
+        } else {
+          clearInterval(fadeIn);
+        }
+      }, 200);
     });
 
     function goToPage2() {
-      // Safe fallback for autoplay block
-      music.play().catch(() => {});
+      pg1Music.pause();
+      pg2Music.volume = 1;
+      pg2Music.play();
 
       document.getElementById("page1").style.opacity = 0;
       setTimeout(() => {
@@ -193,14 +198,13 @@
       typeChar();
     }
 
-    // Rug click transition to flipbook.html
     document.getElementById("rugHotspot").addEventListener("click", () => {
       const overlay = document.getElementById("fadeOverlay");
       overlay.classList.add("active");
 
       setTimeout(() => {
         window.location.href = "finalised-flipbook.html";
-      }, 1000); // Match the CSS transition duration
+      }, 1000);
     });
   </script>
 </body>
